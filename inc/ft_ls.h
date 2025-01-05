@@ -4,6 +4,7 @@
 
 #ifndef FT_LS_H
 #define FT_LS_H
+#include <dirent.h>
 #include <flags.h>
 #include <sys/stat.h>
 
@@ -13,6 +14,7 @@
 
 #define UNRECOGNIZED_OPTION "unrecognized option"
 #define CANNOT_ACCESS "cannot access"
+#define CANNOT_OPEN_DIRECTORY "cannot open directory"
 
 // Flags related
 #define ALLOWED_FLAGS "alrtR"
@@ -40,6 +42,15 @@ fileinfo_del_one(t_fileinfo *fileinfo);
 void
 fileinfo_clear(t_fileinfo **fileinfo);
 
+// Sorting related
+typedef int (*t_compare)(const t_fileinfo *, const t_fileinfo *);
+
+void
+merge_sort(t_fileinfo **head_ref, t_compare cmp_function);
+
+int
+compare_name(const t_fileinfo *a, const t_fileinfo *b);
+
 // Parser related
 int
 parse_arguments(int argc, const char **argv, t_program_params *params, t_fileinfo **fileinfo);
@@ -47,5 +58,11 @@ parse_arguments(int argc, const char **argv, t_program_params *params, t_fileinf
 // Output related
 void
 print_error_msg(int error_code, const char *error_msg, const char *cause);
+
+void
+print_files(const t_fileinfo *fileinfo);
+
+void
+print_directory(DIR *dir, t_compare cmp_function);
 
 #endif //FT_LS_H

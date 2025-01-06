@@ -68,6 +68,10 @@ compare_name(const t_fileinfo *a, const t_fileinfo *b) {
  * The split point is determined based on the length of the list. If the list has
  * an odd number of elements, the extra element is included in the front list.
  *
+ * Additionally, the `previous` pointer of the first node in the back half is updated
+ * to NULL, ensuring the split results in two independent sublists with proper
+ * doubly-linked list consistency.
+ *
  * @param source The pointer to the head of the list to be split.
  * @param front  The pointer to a pointer where the head of the front half will be stored.
  * @param back   The pointer to a pointer where the head of the back half will be stored.
@@ -83,8 +87,12 @@ split_list(t_fileinfo *source, t_fileinfo **front, t_fileinfo **back) {
             fast = fast->next;
         }
     }
+
     *front = source;
     *back = slow->next;
+    if (*back != NULL) {
+        (*back)->previous = NULL;
+    }
     slow->next = NULL;
 }
 
@@ -92,6 +100,13 @@ split_list(t_fileinfo *source, t_fileinfo **front, t_fileinfo **back) {
  * Merges two sorted linked lists into a single sorted linked list.
  * This function assumes that both input lists are sorted according to
  * the given comparison function.
+ *
+ * During the merge process, the `previous` pointer of each node is updated
+ * to correctly point to the previous node in the merged list, ensuring
+ * the doubly-linked list integrity is maintained.
+ *
+ * If either input list is NULL, the resulting list's first node's `previous`
+ * pointer is set to NULL.
  *
  * @param a Pointer to the head of the first sorted linked list.
  * @param b Pointer to the head of the second sorted linked list.
@@ -104,12 +119,16 @@ split_list(t_fileinfo *source, t_fileinfo **front, t_fileinfo **back) {
  * @return Pointer to the head of the newly merged sorted linked list.
  *         If both input lists are empty, the function returns NULL.
  */
-t_fileinfo *
-sorted_merge(t_fileinfo *a, t_fileinfo *b, const t_compare cmp_function) {
+t_fileinfo
+*sorted_merge(t_fileinfo *a, t_fileinfo *b, const t_compare cmp_function) {
     if (a == NULL) {
+        if (b != NULL) {
+            b->previous = NULL;
+        }
         return b;
     }
     if (b == NULL) {
+        a->previous = NULL; // Ensure the first node's previous is NULL
         return a;
     }
 
@@ -117,15 +136,26 @@ sorted_merge(t_fileinfo *a, t_fileinfo *b, const t_compare cmp_function) {
     if (cmp_function(a, b) <= 0) {
         result = a;
         result->next = sorted_merge(a->next, b, cmp_function);
+        if (result->next != NULL) {
+            result->next->previous = result;
+        }
     } else {
         result = b;
         result->next = sorted_merge(a, b->next, cmp_function);
+        if (result->next != NULL) {
+            result->next->previous = result;
+        }
     }
     return result;
 }
 
 /**
  * Recursively sorts a linked list using the merge sort algorithm.
+ *
+ * After sorting, the `previous` pointer of the head of the final sorted list
+ * is set to NULL, ensuring proper doubly-linked list behavior.
+ * This relies on the logic in `split_list` and `sorted_merge` to maintain
+ * doubly-linked list consistency throughout the split and merge steps.
  *
  * @param head_ref A double pointer to the head of the linked list to be sorted.
  *                 After sorting, the head pointer will point to the sorted list.
@@ -142,8 +172,12 @@ merge_sort(t_fileinfo **head_ref, const t_compare cmp_function) {
 
     if (head != NULL && head->next != NULL) {
         split_list(head, &a, &b);
+
         merge_sort(&a, cmp_function);
         merge_sort(&b, cmp_function);
         *head_ref = sorted_merge(a, b, cmp_function);
+        if (*head_ref != NULL) {
+            (*head_ref)->previous = NULL;
+        }
     }
 }

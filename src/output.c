@@ -16,18 +16,31 @@
  * the list, the function outputs a newline character. If the provided `fileinfo`
  * pointer is `NULL`, no output is produced.
  *
+ * @param params Pointer to a t_program_params struct containing program data such as flags.
  * @param fileinfo A pointer to the head of a linked list of file information
  * structures (`t_fileinfo`). Each node in the list contains the file metadata,
  * including its name.
  */
 void
-print_files(const t_fileinfo *fileinfo) {
-    const t_fileinfo *current = fileinfo;
+print_files(const t_program_params *params, t_fileinfo *fileinfo) {
+    const int reverse_print = is_set_flag('r', *params);
+
     if (fileinfo != NULL) {
-        while (current) {
+        const t_fileinfo *current = reverse_print == 1 ? fileinfo_last(fileinfo) : fileinfo;
+        if (reverse_print == 1) {
+            while (current->previous != NULL) {
+                ft_putstr_fd(current->name, STDOUT_FILENO);
+                ft_putstr_fd("  ", STDOUT_FILENO);
+                current = current->previous;
+            }
             ft_putstr_fd(current->name, STDOUT_FILENO);
             ft_putstr_fd("  ", STDOUT_FILENO);
-            current = current->next;
+        } else {
+            while (current) {
+                ft_putstr_fd(current->name, STDOUT_FILENO);
+                ft_putstr_fd("  ", STDOUT_FILENO);
+                current = current->next;
+            }
         }
         ft_putchar_fd('\n', STDOUT_FILENO);
     }
@@ -71,7 +84,7 @@ print_directory(const t_program_params *params, DIR *dir, const t_compare cmp_fu
     }
     if (contents != NULL) {
         merge_sort(&contents, cmp_function);
-        print_files(contents);
+        print_files(params, contents);
         fileinfo_clear(&contents);
     }
 }

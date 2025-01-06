@@ -22,6 +22,7 @@ t_fileinfo
 		new->code = code;
 		new->file_status = file_status;
 		new->next = NULL;
+		new->previous = NULL;
 	}
 	return new;
 
@@ -63,6 +64,7 @@ fileinfo_add_back(t_fileinfo **fileinfo, t_fileinfo *new)
 		} else {
 			t_fileinfo *last = fileinfo_last(*fileinfo);
 			last->next = new;
+			new->previous = last;
 		}
 	}
 }

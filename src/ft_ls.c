@@ -89,7 +89,7 @@ main(const int argc, const char **argv) {
     t_fileinfo *files_only = extract_non_dir_files(&fileinfo);
     if (files_only != NULL) {
         merge_sort(&files_only, cmp_function);
-        print_files(files_only);
+        print_files(&params, files_only);
     }
 
     if (fileinfo != NULL) {

@@ -63,6 +63,6 @@ void
 print_files(const t_fileinfo *fileinfo);
 
 void
-print_directory(DIR *dir, t_compare cmp_function);
+print_directory(const t_program_params *params, DIR *dir, t_compare cmp_function);
 
 #endif //FT_LS_H

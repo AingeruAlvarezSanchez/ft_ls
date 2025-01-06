@@ -49,6 +49,7 @@ print_files(const t_fileinfo *fileinfo) {
  * - Prints the sorted file information using print_files.
  * - Cleans up allocated memory by clearing the list of collected file information.
  *
+ * @param params Pointer to a t_program_params struct containing program data such as flags.
  * @param dir A pointer to an open directory stream to be read.
  *            The directory stream must be valid and previously opened using opendir.
  * @param cmp_function A function pointer that defines the comparison logic used for sorting
@@ -56,16 +57,17 @@ print_files(const t_fileinfo *fileinfo) {
  *                     t_fileinfo and return an integer indicating the sorting order.
  */
 void
-print_directory(DIR *dir, const t_compare cmp_function) {
+print_directory(const t_program_params *params, DIR *dir, const t_compare cmp_function) {
     struct dirent *entry;
     t_fileinfo *contents = NULL;
 
     while ((entry = readdir(dir)) != NULL) {
-        if (entry->d_name[0] != '.') {
-            struct stat file_status;
-            stat(entry->d_name, &file_status);
-            fileinfo_add_back(&contents, ft_fileinfo_new(ft_strdup(entry->d_name), file_status, 0));
+        if (entry->d_name[0] == '.' && !is_set_flag('a', *params)) {
+            continue;
         }
+        struct stat file_status;
+        stat(entry->d_name, &file_status);
+        fileinfo_add_back(&contents, ft_fileinfo_new(ft_strdup(entry->d_name), file_status, 0));
     }
     if (contents != NULL) {
         merge_sort(&contents, cmp_function);

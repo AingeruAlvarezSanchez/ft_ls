@@ -44,13 +44,14 @@ extract_non_dir_files(t_fileinfo **fileinfo) {
  * handling errors for inaccessible directories.
  *
  * @param fileinfo Pointer to the linked list of file information structures. This list is sorted in place.
+ * @param params Pointer to a t_program_params struct containing program data such as flags.
  * @param cmp_function Function pointer used to compare file information for sorting.
  * @param print_header Integer flag indicating whether to print directory headers before listing their contents.
  *                     A value of 1 enables the header print, 0 disables it.
  * @return Returns an integer status code. A value of 0 indicates success, while 2 indicates an error.
  */
 int
-ft_ls(t_fileinfo **fileinfo, const t_compare cmp_function, const int print_header) {
+ft_ls(t_fileinfo **fileinfo, const t_program_params *params, const t_compare cmp_function, const int print_header) {
     static int status;
     (void)print_header;
 
@@ -69,7 +70,7 @@ ft_ls(t_fileinfo **fileinfo, const t_compare cmp_function, const int print_heade
                 ft_putstr_fd(current->name, STDOUT_FILENO);
                 ft_putendl_fd(":", STDOUT_FILENO);
             }
-            print_directory(dir, cmp_function);
+            print_directory(params, dir, cmp_function);
         }
         closedir(dir);
         current = current->next;
@@ -96,7 +97,7 @@ main(const int argc, const char **argv) {
             ft_putchar_fd('\n', STDOUT_FILENO);
         }
         const int print_header = fileinfo->next != NULL || files_only != NULL ? 1 : 0;
-        params.status = ft_ls(&fileinfo, cmp_function, print_header);
+        params.status = ft_ls(&fileinfo, &params, cmp_function, print_header);
     }
     fileinfo_clear(&files_only);
     fileinfo_clear(&fileinfo);

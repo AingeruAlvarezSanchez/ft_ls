@@ -53,9 +53,8 @@ extract_non_dir_files(t_fileinfo **fileinfo) {
 int
 ft_ls(t_fileinfo **fileinfo, const t_program_params *params, const t_compare cmp_function, const int print_header) {
     static int status;
-    (void)print_header;
+    static int first_print;
 
-    merge_sort(fileinfo, cmp_function);
     const t_fileinfo *current = *fileinfo;
     while (current) {
         DIR *dir = opendir(current->name);
@@ -63,14 +62,12 @@ ft_ls(t_fileinfo **fileinfo, const t_program_params *params, const t_compare cmp
             print_error_msg(errno, CANNOT_OPEN_DIRECTORY, current->name);
             status = 2;
         } else {
-            if (current != *fileinfo) {
-                ft_putchar_fd('\n', STDOUT_FILENO);
-            }
+            first_print == 0 ? first_print = 1 : ft_putchar_fd('\n', STDOUT_FILENO);
             if (print_header == 1) {
                 ft_putstr_fd(current->name, STDOUT_FILENO);
                 ft_putendl_fd(":", STDOUT_FILENO);
             }
-            print_directory(params, dir, cmp_function);
+            print_directory(params, dir, cmp_function, current->name);
         }
         closedir(dir);
         current = current->next;
@@ -96,7 +93,8 @@ main(const int argc, const char **argv) {
         if (files_only != NULL) {
             ft_putchar_fd('\n', STDOUT_FILENO);
         }
-        const int print_header = fileinfo->next != NULL || files_only != NULL ? 1 : 0;
+        const int print_header = fileinfo->next != NULL || files_only != NULL || is_set_flag('R', params)  ? 1 : 0;
+        merge_sort(&fileinfo, cmp_function);
         params.status = ft_ls(&fileinfo, &params, cmp_function, print_header);
     }
     fileinfo_clear(&files_only);

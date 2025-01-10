@@ -107,6 +107,10 @@ void
 print_files(const t_program_params *params, t_fileinfo *fileinfo);
 
 void
-print_directory(const t_program_params *params, DIR *dir, t_compare cmp_function);
+print_directory(const t_program_params *params, DIR *dir, t_compare cmp_function, const char *base_path);
+
+// Core definition
+int
+ft_ls(t_fileinfo **fileinfo, const t_program_params *params, t_compare cmp_function, int print_header);
 
 #endif //FT_LS_H

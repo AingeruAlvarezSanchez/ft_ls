@@ -42,7 +42,6 @@ print_files(const t_program_params *params, t_fileinfo *fileinfo) {
                 current = current->next;
             }
         }
-        ft_putchar_fd('\n', STDOUT_FILENO);
     }
 }
 
@@ -68,25 +67,42 @@ print_files(const t_program_params *params, t_fileinfo *fileinfo) {
  * @param cmp_function A function pointer that defines the comparison logic used for sorting
  *                     the directory contents. The function must accept two parameters of type
  *                     t_fileinfo and return an integer indicating the sorting order.
+ * @param base_path The base path of the dir.
  */
 void
-print_directory(const t_program_params *params, DIR *dir, const t_compare cmp_function) {
+print_directory(const t_program_params *params, DIR *dir, const t_compare cmp_function, const char *base_path) {
     struct dirent *entry;
     t_fileinfo *contents = NULL;
+    t_fileinfo *dirs = NULL;
+    char *tmp = base_path[ft_strlen(base_path) - 1] == '/' ? ft_strdup(base_path) : ft_strjoin(base_path, "/");
 
     while ((entry = readdir(dir)) != NULL) {
         if (entry->d_name[0] == '.' && !is_set_flag('a', *params)) {
             continue;
         }
+        char *full_path = ft_strjoin(tmp, entry->d_name);
+
         struct stat file_status;
-        stat(entry->d_name, &file_status);
+        stat(full_path, &file_status);
+
+        if (S_ISDIR(file_status.st_mode) && ft_strncmp(entry->d_name, ".", 1) && ft_strncmp(entry->d_name, "..", 2)) {
+            fileinfo_add_back(&dirs, ft_fileinfo_new(ft_strdup(full_path), file_status, 0));
+        }
+        free(full_path);
         fileinfo_add_back(&contents, ft_fileinfo_new(ft_strdup(entry->d_name), file_status, 0));
     }
     if (contents != NULL) {
         merge_sort(&contents, cmp_function);
         print_files(params, contents);
+        ft_putchar_fd('\n', STDOUT_FILENO);
+        if (is_set_flag('R', *params) && dirs != NULL) {
+            merge_sort(&dirs, cmp_function);
+            ft_ls(&dirs, params, cmp_function, 1);
+        }
         fileinfo_clear(&contents);
+        fileinfo_clear(&dirs);
     }
+    free(tmp);
 }
 
 /**

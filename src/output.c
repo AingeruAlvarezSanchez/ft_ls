@@ -83,7 +83,7 @@ print_directory(const t_program_params *params, DIR *dir, const t_compare cmp_fu
         char *full_path = ft_strjoin(tmp, entry->d_name);
 
         struct stat file_status;
-        stat(full_path, &file_status);
+        lstat(full_path, &file_status);
 
         if (S_ISDIR(file_status.st_mode) && ft_strncmp(entry->d_name, ".", 1) && ft_strncmp(entry->d_name, "..", 2)) {
             fileinfo_add_back(&dirs, ft_fileinfo_new(ft_strdup(full_path), file_status, 0));

@@ -47,7 +47,7 @@ add_file(const char *arg, t_fileinfo **fileinfo) {
     static int status;
     struct stat file_status;
 
-    if (stat(arg, &file_status) == -1) {
+    if (lstat(arg, &file_status) == -1) {
         fileinfo_add_back(fileinfo, ft_fileinfo_new(ft_strdup(arg), file_status, errno));
         status = 2;
     } else {
@@ -103,18 +103,17 @@ int
 parse_arguments(const int argc, const char **argv, t_program_params *params, t_fileinfo **fileinfo) {
     int status = EXIT_SUCCESS;
 
-    if (argc == 1) {
-        struct stat file_status;
-        stat(".", &file_status);
-        fileinfo_add_back(fileinfo, ft_fileinfo_new(ft_strdup("./"), file_status, 0));
-    } else {
-        for (int i = 1; i < argc; i++) {
-            if (argv[i][0] == '-' && argv[i][1] != '\0') {
-                add_flag(argv[i], params, fileinfo);
-            } else {
-                status = add_file(argv[i], fileinfo);
-            }
+    for (int i = 1; i < argc; i++) {
+        if (argv[i][0] == '-' && argv[i][1] != '\0') {
+            add_flag(argv[i], params, fileinfo);
+        } else {
+            status = add_file(argv[i], fileinfo);
         }
+    }
+    if (*fileinfo == NULL) {
+        struct stat file_status;
+        lstat(".", &file_status);
+        fileinfo_add_back(fileinfo, ft_fileinfo_new(ft_strdup("./"), file_status, 0));
     }
     clean_invalid_files(fileinfo);
     return status;

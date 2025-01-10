@@ -85,7 +85,7 @@ main(const int argc, const char **argv) {
 
     params.status = parse_arguments(argc, argv, &params, &fileinfo);
 
-    const t_compare cmp_function = compare_name;
+    const t_compare cmp_function = is_set_flag('t', params) ? compare_mtime : compare_name;
     t_fileinfo *files_only = extract_non_dir_files(&fileinfo);
     if (files_only != NULL) {
         merge_sort(&files_only, cmp_function);

@@ -5,33 +5,37 @@
 #include <ft_ls.h>
 
 /**
- * Converts all alphabetic characters of a string to lowercase while skipping
- * leading dots in the input string. The result is stored in the provided buffer.
+ * Compares the modification times of two files.
  *
- * The function starts by ignoring all consecutive leading dots (`.`) in the
- * input string. It then processes the remaining characters by converting
- * alphabetic characters to their lowercase equivalent and copying them to
- * the provided buffer. The resulting string is null-terminated.
+ * The comparison is performed by first checking the `st_mtime` field in the
+ * file status structure of each file. If the modification times are equal,
+ * the comparison falls back to comparing the nanoseconds component in the
+ * `st_mtim.tv_nsec` field for higher precision. If both time fields are equal,
+ * the file names are compared using the `compare_name` function as a tiebreaker.
  *
- * @param str The input string to be converted to lowercase.
- *            It is assumed that the string is null-terminated.
- * @param buffer A pre-allocated buffer where the lowercase result will be stored.
- *               It should be large enough to hold the modified string, including
- *               the null-terminator.
- * @return A pointer to the buffer containing the lowercase result.
+ * @param a A pointer to the first file information structure containing file status information.
+ * @param b A pointer to the second file information structure containing file status information.
+ * @return An integer less than, equal to, or greater than zero if the modification time
+ *         of the first file is, respectively, more recent than, equal to, or older than
+ *         the modification time of the second file. If the modification times are identical,
+ *         file names are compared as a secondary criterion.
  */
-static char *str_to_lower(const char *str, char *buffer) {
-    int i = 0, j = 0;
-
-    while (str[i] == '.')
-        i++;
-    while (str[i]) {
-        buffer[j] = ft_tolower(str[i]);
-        i++;
-        j++;
+int
+compare_mtime(const t_fileinfo *a, const t_fileinfo *b)
+{
+    if (a->file_status.st_mtime > b->file_status.st_mtime) {
+        return -1;
     }
-    buffer[j] = '\0';
-    return buffer;
+    if (a->file_status.st_mtime < b->file_status.st_mtime) {
+        return 1;
+    }
+    if (a->file_status.st_mtim.tv_nsec > b->file_status.st_mtim.tv_nsec) {
+        return -1;
+    }
+    if (a->file_status.st_mtim.tv_nsec < b->file_status.st_mtim.tv_nsec) {
+        return 1;
+    }
+    return compare_name(a, b);
 }
 
 /**
@@ -49,15 +53,11 @@ static char *str_to_lower(const char *str, char *buffer) {
  */
 int
 compare_name(const t_fileinfo *a, const t_fileinfo *b) {
-    char a_tolower[ft_strlen(a->name) + 1];
-    char b_tolower[ft_strlen(b->name) + 1];
-    str_to_lower(a->name, a_tolower);
-    str_to_lower(b->name, b_tolower);
     return ft_strncmp(
-        a_tolower,
-        b_tolower,
-        ft_strlen(a_tolower) > ft_strlen(b_tolower) ? ft_strlen(a_tolower) :
-                                                      ft_strlen(b_tolower));
+        a->name,
+        b->name,
+        ft_strlen(a->name) > ft_strlen(b->name) ? ft_strlen(a->name) :
+                                                  ft_strlen(b->name));
 }
 
 /**

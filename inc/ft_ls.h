@@ -92,6 +92,9 @@ merge_sort(t_fileinfo **head_ref, t_compare cmp_function);
 int
 compare_name(const t_fileinfo *a, const t_fileinfo *b);
 
+int
+compare_mtime(const t_fileinfo *a, const t_fileinfo *b);
+
 // Parser related
 int
 parse_arguments(int argc, const char **argv, t_program_params *params, t_fileinfo **fileinfo);
